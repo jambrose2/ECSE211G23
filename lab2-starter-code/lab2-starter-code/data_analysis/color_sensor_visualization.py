@@ -16,7 +16,7 @@ from matplotlib import pyplot as plt
 import numpy as np
 
 
-COLOR_SENSOR_DATA_FILE = "color_sensor.csv"
+COLOR_SENSOR_DATA_FILE = "color_sensorGREEN.csv"
 
 
 def gaussian(x, values):
