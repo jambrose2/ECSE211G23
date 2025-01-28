@@ -21,16 +21,22 @@ wait_ready_sensors(True) # Input True to see what the robot is trying to initial
 def collect_color_sensor_data():
     "Collect color sensor data."
     output_file = open(COLOR_SENSOR_DATA_FILE, "w")
+    ticker = 0
+    v = True
     try:
-        while not t.is_pressed():
-            pass
-        if (t.is_pressed()):
-            rgb_data = color.get_rgb()
-            output_file.write(rgb_data)
-            output_file.write("\n")
+        while v:
+            if (t.is_pressed()):
+                rgb_data = color.get_rgb()
+                output_file.write(f"{rgb_data}\n")
+                ticker += 1
+            if (ticker >= 15):
+                v = False
     except BaseException:
+        print("Ended early")
+    finally:
+        print("Done")
+        output_file.close()
         exit()
-    output_file.close()
 
 
 
