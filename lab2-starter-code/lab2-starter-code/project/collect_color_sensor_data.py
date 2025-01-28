@@ -21,12 +21,16 @@ wait_ready_sensors(True) # Input True to see what the robot is trying to initial
 def collect_color_sensor_data():
     "Collect color sensor data."
     output_file = open(COLOR_SENSOR_DATA_FILE, "w")
-    while not t.is_pressed():
-        pass
-    if (TouchSensor.is_pressed()):
-        rgb_data = color.get_rgb()
-        output_file.write(rgb_data)
-        output_file.write("\n")
+    try:
+        while not t.is_pressed():
+            pass
+        if (t.is_pressed()):
+            rgb_data = color.get_rgb()
+            output_file.write(rgb_data)
+            output_file.write("\n")
+    except BaseException:
+        exit()
+    output_file.close()
 
 
 
