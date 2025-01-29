@@ -17,6 +17,7 @@ t = TouchSensor(...)
 
 wait_ready_sensors(True) # Input True to see what the robot is trying to initialize! False to be silent.
 
+numPoints = 15 # Set this to the number of data points you want to take
 
 def collect_color_sensor_data():
     "Collect color sensor data."
@@ -29,7 +30,7 @@ def collect_color_sensor_data():
                 rgb_data = color.get_rgb()
                 output_file.write(f"{rgb_data}\n")
                 ticker += 1
-            if (ticker >= 15):
+            if (ticker >= numPoints):
                 v = False
     except BaseException:
         print("Ended early")
