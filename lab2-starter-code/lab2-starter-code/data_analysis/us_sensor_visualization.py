@@ -22,5 +22,5 @@ times = [DELAY_SEC * i for i in range(len(distances))]
 plt.plot(times, distances)
 plt.xlabel("Time (s)")
 plt.ylabel("Distance (cm)")
-plt.yticks([d for d in range(round(max(distances)) + 10) if d % 10 == 0])
+plt.yticks([d for d in range(round(max(distances)) + 20) if d % 10 == 0])
 plt.show()
