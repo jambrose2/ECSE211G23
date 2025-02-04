@@ -5,7 +5,7 @@ import time
 import threading
 import FluteSensors
 
-motor = Motor("A")
+motor = Motor(...)
 US_SENSOR_STOP = EV3UltrasonicSensor(...)
 US_SENSOR_DRUM = EV3UltrasonicSensor(...)
 
@@ -26,17 +26,17 @@ def drums():
     try:
         while not stopEvent.is_set():
             motor.set_dps(dps=1000)
-            motor.set_position_relative(90)
+            motor.set_position_relative(45)
             time.sleep(0.5)
-            motor.set_position_relative(-90)
+            motor.set_position_relative(-45)
             time.sleep(0.5)
-            motor.set_position_relative(90)
+            motor.set_position_relative(45)
             time.sleep(0.3)
-            motor.set_position_relative(-90)
+            motor.set_position_relative(-45)
             time.sleep(0.3)
-            motor.set_position_relative(90)
+            motor.set_position_relative(45)
             time.sleep(0.8)
-            motor.set_position_relative(-90)
+            motor.set_position_relative(-45)
         motor.set_power(0)
     except BaseException:
         motor.set_power(0)
@@ -60,11 +60,5 @@ if __name__ == '__main__':
 
     if drumThread:
         drumThread.join()
-
+        
     fluteThread.join()
-
-
-
-
-
-
