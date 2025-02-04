@@ -5,8 +5,8 @@ import time
 import threading
 import FluteSensors
 
-motor = Motor(A)
-cSensor = EV3ColorSensor(3)
+motor = Motor(...)
+cSensor = EV3ColorSensor(...)
 
 
 wait_ready_sensors()
@@ -16,10 +16,8 @@ stopEvent = threading.Event()
 
 
 def colorIdentifier(rgb):
-    if rgb[0] == None or rgb[1] == None or rgb[2] == None:
-        return 0
     s = rgb[0] + rgb[1] + rgb[2]
-    if s < 100:
+    if s == 0:
         return 0
     newRGB = [rgb[0]/s, rgb[1]/s, rgb[2]/s]
     if newRGB[0] > 0.6:
@@ -38,50 +36,48 @@ def colorIdentifier(rgb):
         print("Unable to identify")
         return 0
 
-def colorLoop():
-    drumOn = False
+def colorLoop(t):
     while not stopEvent.is_set():
-        print(drumOn)
         color = cSensor.get_rgb()
-        i = colorIdentifier(color)
+        id = colorIdentifier(color)
 
-        if i == 1:
+        if id == 1:
             print("Red")
             if drumOn:
                 drumOn = False
                 stopEvent.set()
                 motor.set_power(0)
+                drumThread.join()
                 stopEvent.clear()
-                exit()
 
-        elif i == 2:
+        elif id == 2:
             print("Green")
             if not drumOn:
+                drumOn = True
                 stopEvent.clear()
                 drumThread = threading.Thread(target=drums)
                 drumThread.start()
-                drumOn = True
         # elif colorIdentifier(color) == 3:
         #     print("Blue")
         else:
+            print("Unable to identify")
             continue
 
 def drums():
     try:
         while not stopEvent.is_set():
             motor.set_dps(dps=1000)
-            motor.set_position_relative(90)
-            time.sleep(1)
-            motor.set_position_relative(-90)
-            time.sleep(1.5)
-            motor.set_position_relative(90)
-            time.sleep(1.3)
-            motor.set_position_relative(-90)
-            time.sleep(1.3)
-            motor.set_position_relative(90)
-            time.sleep(1.8)
-            motor.set_position_relative(-90)
-            time.sleep(1.8)
+            motor.set_position_relative(45, block=True)
+            time.sleep(0.5)
+            motor.set_position_relative(-45, block=True)
+            time.sleep(0.5)
+            motor.set_position_relative(45, block=True)
+            time.sleep(0.3)
+            motor.set_position_relative(-45, block=True)
+            time.sleep(0.3)
+            motor.set_position_relative(45, block=True)
+            time.sleep(0.8)
+            motor.set_position_relative(-45, block=True)
         motor.set_power(0)
     except Exception as e:
         print("Drums error: ", e)
@@ -95,4 +91,5 @@ if __name__ == '__main__':
     fluteThread.start()
     ColorSensorLoop = threading.Thread(target=colorLoop, daemon=True)
     ColorSensorLoop.start()
+    drumOn = False
     

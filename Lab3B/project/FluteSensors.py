@@ -1,16 +1,17 @@
-from utils.brick import wait_ready_sensors, TouchSensor
+from utils.brick import wait_ready_sensors, TouchSensor, EV3UltrasonicSensor
 from utils import sound
 
-note1 = sound.Sound(duration=0.3, pitch="G2", volume=80)
-note2 = sound.Sound(duration=0.3, pitch="A#0", volume=80)
-note3 = sound.Sound(duration=0.3, pitch="C#2", volume=80)
+note1 = sound.Sound(duration=0.3, pitch="F#4", volume=80)
+note2 = sound.Sound(duration=0.3, pitch="Bb3", volume=80)
+note3 = sound.Sound(duration=0.3, pitch="Eb5", volume=80)
 note4 = sound.Sound(duration=0.3, pitch="D#4", volume=80)
 
 
 touch1 = TouchSensor(1)
 touch2 = TouchSensor(2)
-touch3 = TouchSensor(3)
-touch4 = TouchSensor(4)
+US = EV3UltrasonicSensor(3)
+
+cutoff = 10
 
 def play_sound(i):
     if (i == 1):
@@ -31,17 +32,19 @@ def play_sound(i):
 def initializeFlute():
     try:
         while True:
-            if touch1.is_pressed:
-                play_sound(1)
-            if touch2.is_pressed:
-                play_sound(2)
-            if touch3.is_pressed:
-                play_sound(3)
-            if touch4.is_pressed:
+            if touch1.is_pressed() and touch2.is_pressed():
                 play_sound(4)
-    except BaseException or KeyboardInterrupt:
-        exit()
+            elif touch1.is_pressed():
+                play_sound(1)
+            elif touch2.is_pressed():
+                play_sound(2)
+            elif US.get_cm() < cutoff:
+                play_sound(3)
+            time.sleep(0.05)
+            
+    except Exception as e:
+        print("Error: " + str(e))
+        sound.beep()
 
 if __name__ == '__main__':
-
     initializeFlute()
