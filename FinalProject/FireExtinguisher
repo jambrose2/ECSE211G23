@@ -5,12 +5,13 @@ import threading
 from collect_us_sensor_data import *
 import simpleaudio as sa
 
+
 COLOR_SENSOR_MOTOR = Motor('A')
 COLOR_SENSOR = EV3ColorSensor(1)
 RIGHT_WHEEL = Motor('B')
 LEFT_WHEEL = Motor('C')
 
-sound = sa.WaveObject.from_wave_file("203913__landub__fire-brigade-siren-street-cars.wav")
+
 
 forwardSpeed = 20
 
@@ -36,10 +37,36 @@ fireSquare = [False, False, False, False, False, False]
 centerOfSquareCoordinates = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
 
 
+
+
+sound = sa.WaveObject.from_wave_file("203913__landub__fire-brigade-siren-street-cars.wav")
+
+
+def timerThread():
+    time.sleep(150)
+    recall()
+
+def recall():
+    global stopEvent
+    stopEvent.set()
+    time.sleep(0.1)
+    findDoor()
+    goHome()
+
+
+def findDoor():
+    TODO
+    # Find door while in room and go to it
+
+def goHome():
+    TODO
+    # Go back to the starting point from doorway
+
 def fireSiren():
     while True:
         play_obj = sound.play()
         play_obj.wait_done()
+
 
 
 def extinguishProtocol():
@@ -150,6 +177,18 @@ def backupLeft():
     TODO
     # Swing straight from the left side
 
+def turn90Left():
+    TODO
+    # Turn 90 degrees to the left
+
+def turn90Right():
+    TODO
+    # Turn 90 degrees to the right
+
+def turn180():
+    TODO
+    # Turn 180 degrees
+
     
 
 def squareSearch(squareNumber):
@@ -204,8 +243,13 @@ def squareSearch(squareNumber):
     
     
 
+def hallwayNavigator():
+    TODO
+    # Navigate the hallway and find the room
 
-#if __name__ == '__main__':
- #   fireThread = threading.Thread(target = fireSiren, daemon=True)
+
+if __name__ == '__main__':
+    timeThread = threading.Thread(target = timerThread, daemon=True)
+    
     
 
