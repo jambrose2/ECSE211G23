@@ -219,7 +219,7 @@ def squareSearch(squareNumber):
                 RIGHT_WHEEL.set_power(0)
                 time.sleep(fullSquareTime/10)  
                 LEFT_WHEEL.set_power(0)
-
+                
         for i in range(10):  
                 color = get_color()
                 if color == 1:
