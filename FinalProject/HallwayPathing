@@ -95,6 +95,9 @@ def turnRightandGo():
                 if blackSquaresPassed == 3:
                     continue
                 else:
+                    LEFT_WHEEL.set_power(forwardSpeed)
+                    RIGHT_WHEEL.set_power(forwardSpeed)
+                    time.sleep(fullSquareTime/2)
                     turnIntoRoom()
                     break
             else:
@@ -136,3 +139,7 @@ def turnIntoRoom():
                 LEFT_WHEEL.set_power(0)
                 RIGHT_WHEEL.set_power(0)
                 break
+
+def homeFromRoom():
+    # This one is gonna be hard, we need to either get out of the room pretty perfectly,
+    #  or les perfectly and then be better in the hallway
