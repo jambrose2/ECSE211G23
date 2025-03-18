@@ -1,0 +1,38 @@
+from utils.brick import *
+from lib import *
+import time
+import threading
+from collect_us_sensor_data import *
+
+forwardSpeed = 30
+
+RIGHT_WHEEL = Motor('B')
+LEFT_WHEEL = Motor('C')
+
+def turn90Left():
+    RIGHT_WHEEL.set_power(forwardSpeed)
+    LEFT_WHEEL.set_power(-forwardSpeed)
+    time.sleep(0.75)
+    RIGHT_WHEEL.set_power(0)
+    LEFT_WHEEL.set_power(0)
+
+def turn90Right():
+    RIGHT_WHEEL.set_power(-forwardSpeed)
+    LEFT_WHEEL.set_power(forwardSpeed)
+    time.sleep(0.75)
+    RIGHT_WHEEL.set_power(0)
+    LEFT_WHEEL.set_power(0)
+
+def turn180():
+    RIGHT_WHEEL.set_power(forwardSpeed)
+    LEFT_WHEEL.set_power(-forwardSpeed)
+    time.sleep(1.5)
+    RIGHT_WHEEL.set_power(0)
+    LEFT_WHEEL.set_power(0)
+
+def forwardOne():
+    RIGHT_WHEEL.set_power(forwardSpeed)
+    LEFT_WHEEL.set_power(forwardSpeed)
+    time.sleep(2)
+    RIGHT_WHEEL.set_power(0)
+    LEFT_WHEEL.set_power(0)
