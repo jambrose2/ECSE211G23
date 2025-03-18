@@ -96,12 +96,16 @@ def findDoor():
             RIGHT_WHEEL.set_power(0)
         color = get_color()
         while (color != 1):
+            if (color == 2):
+                if (currentSquare == 0):
+                    
             LEFT_WHEEL.set_power(forwardSpeed)
             RIGHT_WHEEL.set_power(forwardSpeed)
             if (greenStickerSquares[currentSquare] or fireSquare[currentSquare]):
                 time.sleep(0.15)
             else:
                 time.sleep(0.5)
+            color = get_color()
         
     
 
