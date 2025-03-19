@@ -9,6 +9,14 @@ forwardSpeed = 30
 RIGHT_WHEEL = Motor('B')
 LEFT_WHEEL = Motor('C')
 
+GYRO = EV3GyroSensor(4)
+
+
+while True:
+    print(GYRO.get_angle())
+    time.sleep(0.15)
+
+
 def turn90Left():
     RIGHT_WHEEL.set_power(forwardSpeed)
     LEFT_WHEEL.set_power(-forwardSpeed)

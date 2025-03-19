@@ -47,9 +47,6 @@ currentDirection = "North"
 
 
 
-
-
-
 sound = sa.WaveObject.from_wave_file("203913__landub__fire-brigade-siren-street-cars.wav")
 
 
