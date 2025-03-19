@@ -8,13 +8,22 @@ import simpleaudio as sa
 
 COLOR_SENSOR_MOTOR = Motor('A')
 COLOR_SENSOR = EV3ColorSensor(1)
-RIGHT_WHEEL = Motor('B')
-LEFT_WHEEL = Motor('C')
+RIGHT_WHEEL = Motor('D')
+LEFT_WHEEL = Motor('A')
+
+US_SENSOR = UltrasonicSensor(3)
 
 GYRO_SENSOR = GyroSensor(4)
+GYRO_SENSOR.set_mode('abs')
 GYRO_SENSOR.reset_angle(0)
+time.sleep(0.5)
 
 EMERGENCY_STOP = TouchSensor(2)
+
+LeftDistance = ?
+RightDistance = ?
+UpDistance = 0
+DownDistance = ?
 
 
 
@@ -26,10 +35,9 @@ fullSquareTime = 3
 turnSpeed = 30
 stopEvent = threading.Event()
 
-fireStop = threading.Event()
-
 timesUp = threading.Event()
 
+fireSirenStopEvent = threading.Event()
 
 currentSquare = None
 
@@ -39,8 +47,11 @@ isOnBlack = False
 
 fires_putout = 0
 
-greenStickerSquares = [False, False, False, False, False, False]
-fireSquare = [False, False, False, False, False, False]
+distance = 0
+
+timesHitWall = 0
+
+
 
 
 currentDirection = "North"
@@ -48,6 +59,14 @@ currentDirection = "North"
 
 
 sound = sa.WaveObject.from_wave_file("203913__landub__fire-brigade-siren-street-cars.wav")
+
+
+def ultrasonicReader():
+    global distance
+    global stopEvent
+    while not stopEvent.is_set():
+        distance = US_SENSOR.get_distance()
+        time.sleep(0.1)
 
 
 def timerThread():
@@ -79,30 +98,8 @@ def recall():
 
 
 def findDoor():
-    global stopEvent
-    global forwardSpeed
-    global currentSquare
-    while not stopEvent.is_set():
-        while (GYRO_SENSOR.get_angle() > -190 or GYRO_SENSOR.get_angle() < -170):
-            if stopEvent.is_set():
-                return
-            LEFT_WHEEL.set_power(-forwardSpeed)
-            RIGHT_WHEEL.set_power(forwardSpeed)
-            time.sleep(0.1)
-            LEFT_WHEEL.set_power(0)
-            RIGHT_WHEEL.set_power(0)
-        color = get_color()
-        while (color != 1):
-            if (color == 2):
-                if (currentSquare == 0):
-                    
-            LEFT_WHEEL.set_power(forwardSpeed)
-            RIGHT_WHEEL.set_power(forwardSpeed)
-            if (greenStickerSquares[currentSquare] or fireSquare[currentSquare]):
-                time.sleep(0.15)
-            else:
-                time.sleep(0.5)
-            color = get_color()
+    TODO
+    # Find the door from the room
         
     
 
@@ -113,7 +110,7 @@ def goHome():
 def fireSiren():
     global stopEvent, fireSirenStopEvent
     play_obj = sound.play()  
-    while not (stopEvent.is_set() or fireStop.wait(0.1)):  
+    while not (stopEvent.is_set() or fireSirenStopEvent.wait(0.1)):  
         if not play_obj.is_playing():
             play_obj = sound.play()
     play_obj.stop()
@@ -198,35 +195,95 @@ def backup(length):
 
 
 def searchAlgo():
-    global fires_putout
-    global isOnBlack
+    global stopEvent
+    global currentDirection
     global currentSquare
-    global greenStickerSquares
-    global squaresVisited
-    fires_putout = 0
-    squaresVisited = 0
-    while fires_putout < 2:
-        if squaresVisited == 0:
-            squareSearch(0)
-            squaresVisited += 1
+    while not stopEvent.is_set():
+        turn90Left()
+        currentDirection = "Left"
+        if (stopEvent.is_set()):
+            return
+        straightSearch(currentDirection)
+
+
+    
+        
+        
+
+def straightSearch(direction):
+    global stopEvent
+
+    while not stopEvent.is_set():
+        turn90Left()
+        currentDirection = "Left"
+        if (stopEvent.is_set()):
+            return
+        
+        
+        for _ in range(10):
+            if stopEvent.is_set():
+                return
+            color = get_color()
+            if color == 1:
+                extinguishProtocol()
+            if color == 3:
+                evade(currentDirection)
+            if color == 2:
+                turnandSearch(currentDirection)
+            LEFT_WHEEL.set_power(forwardSpeed)
+            time.sleep(fullSquareTime/10)
+            LEFT_WHEEL.set_power(0)
+        if stopEvent.is_set():
+            return
+        for _ in range(10):
+            if stopEvent.is_set():
+                return
+            color = get_color()
+            if color == 1:
+                extinguishProtocol()
+            if color == 3:
+                evade(currentDirection)
+            if color == 2:
+                turnandSearch(currentDirection)
+            RIGHT_WHEEL.set_power(forwardSpeed)
+            time.sleep(fullSquareTime/10)
+            RIGHT_WHEEL.set_power(0)
+        
+
+
+
+
+
+def turnandSearch(direction):
+    global distance
+    global stopEvent
+    if direction == "Up":
+        backup(1)
+        turn90Right()
+        currentDirection = "Right"
+        return
+    if direction == "Right" or direction == "Left":
+        if direction == "Right":
+            if timesHitWall = ?:
+                if stopEvent.is_set():
+                    return
+                escapeProtocol()
+                return
+        backup(1)
+        turn180()
+        if direction == "Right":
+            currentDirection = "Left"
+        else:
+            currentDirection = "Right"
+        return
 
 
 def escapeProtocol():
     TODO
     # Leave square and go back home
 
-def retreat():
-    TODO
-    # If we are in a green sticker square, retreat accordingly
-    # Thinking we should localize with the color sensor and then go back to the center of the square
-    # Maybe keep an array of the center of the squares and give a margin of error
-    # Then just reverse
 
-def barrier(squareNumber):
-    TODO
-    # Check if we are at the barrier of the room or just a square barrier and act accordingly
-    # Maybe localize which room we are in and check if its barrier between rooms or just a square barrier
-    # Then act accordingly
+
 
 def turn90Left():
     TODO
@@ -240,73 +297,13 @@ def turn180():
     TODO
     # Turn 180 degrees
 
-def evadeLeft():
+def evade(direction):
     TODO
-    # Evade to the left
-
-def evadeRight():
-    TODO
-    # Evade to the right
+    # Evade the obstacle and continue the search
 
     
 
-def squareSearch(squareNumber):
-    global currentSquare
-    global isOnBlack
-    global greenStickerSquares
-    global fireSquare
-    currentSquare = squareNumber
-    while True:
-        while not isOnBlack and not greenStickerSquares[currentSquare]:
-            for i in range(10):  
-                if timesUp.is_set():
-                    return
-                if stopEvent.is_set():
-                    return
-                color = get_color()
-                if color == 1:
-                    fireSquare[currentSquare] = True
-                    if (fires_putout == 2):
-                        escapeProtocol()
-                        break
-                    else:
-                        retreat()
-                        break
-                if isOnBlack:
-                    barrier(currentSquare)
-                    break 
-                if greenStickerSquares[currentSquare]:
-                    retreat()
-                    break
-                LEFT_WHEEL.set_power(forwardSpeed)
-                RIGHT_WHEEL.set_power(0)
-                time.sleep(fullSquareTime/10)  
-                LEFT_WHEEL.set_power(0)
-                
-        for i in range(10): 
-                if timesUp.is_set():
-                    return
-                if stopEvent.is_set():
-                    return 
-                color = get_color()
-                if color == 1:
-                    fireSquare[currentSquare] = True
-                    if (fires_putout == 2):
-                        escapeProtocol()
-                        break
-                    else:
-                        retreat()
-                        break
-                if isOnBlack:
-                    barrier(currentSquare)
-                    break 
-                if greenStickerSquares[currentSquare]:
-                    retreat()
-                    break
-                RIGHT_WHEEL.set_power(50)
-                LEFT_WHEEL.set_power(0)
-                time.sleep(fullSquareTime/10)
-                RIGHT_WHEEL.set_power(0)  
+    
     
     
 
@@ -322,6 +319,7 @@ if __name__ == '__main__':
     timeThread.start()
     emergencyStopThread.start()
     fireSirenThread.start()
+    hallwayNavigator()
     
     
 

@@ -2,20 +2,40 @@ from utils.brick import *
 from lib import *
 import time
 import threading
-from collect_us_sensor_data import *
 
 forwardSpeed = 30
 
-RIGHT_WHEEL = Motor('B')
-LEFT_WHEEL = Motor('C')
+RIGHT_WHEEL = Motor('D')
+LEFT_WHEEL = Motor('A')
 
-GYRO = EV3GyroSensor(4)
+#GYRO = EV3GyroSensor(4)
+COLOR = EV3ColorSensor(1)
+US_SENSOR = UltrasonicSensor(2)
 
+#GYRO.reset_measure()
+#time.sleep(0.5)
 
-while True:
-    print(GYRO.get_angle())
-    time.sleep(0.15)
+US_SENSOR_DATA_FILE = "../us_sensor.csv"
+COLOR_SENSOR_DATA_FILE = "../color_sensor.csv"
+#GYRO_SENSOR_DATA_FILE = "../gyro_sensor.csv"
 
+def ultrasonicReader():
+        while True:
+            distance = US_SENSOR.get_distance()
+            US_SENSOR_DATA_FILE.write(f"{distance}\n")
+            time.sleep(0.1)
+
+def colorReader():
+    while True:
+        color = COLOR.get_color()
+        COLOR_SENSOR_DATA_FILE.write(f"{color}\n")
+        time.sleep(0.1)
+
+#def gyroReader():
+ #   while True:
+  #      angle = GYRO.get_abs_measure()
+   #     GYRO_SENSOR_DATA_FILE.write(f"{angle}\n")
+    #    time.sleep(0.15)
 
 def turn90Left():
     RIGHT_WHEEL.set_power(forwardSpeed)
