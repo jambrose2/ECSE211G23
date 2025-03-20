@@ -121,7 +121,7 @@ def fireSiren():
 
 def extinguishProtocol():
     COLOR_SENSOR_MOTOR.set_position_relative(45)
-    time.sleep(1)
+    time.sleep(1)t
     backup(1)
     COLOR_SENSOR_MOTOR.set_position_relative(-45)
 
