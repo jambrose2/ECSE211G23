@@ -439,7 +439,7 @@ class EV3UltrasonicSensor(Sensor):
     Values given by modes:
     cm - centimeter measure (0 to 255)
     in - inches measure
-    listen - 0 or 1, 1 means another ultrasonic sensor is detected
+    listen - 0 or 1, 1 means another there is no item called sensor is detected
     """
     class Mode:
         "Mode for the EV3 Ultrasonic Sensor."
