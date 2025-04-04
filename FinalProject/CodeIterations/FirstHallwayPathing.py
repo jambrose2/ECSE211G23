@@ -1,0 +1,146 @@
+from utils.brick import *
+from lib import *
+import time
+import threading
+from collect_us_sensor_data import *
+
+
+
+COLOR_SENSOR = EV3ColorSensor(1)
+
+
+blackSquaresPassed = 0
+forwardSpeed = 20
+fullSquareTime = 3
+RIGHT_WHEEL = Motor('B')
+LEFT_WHEEL = Motor('C')
+
+def get_color():
+        global blackSquaresPassed
+        while True:
+            color = COLOR_SENSOR.get_rgb()
+            i = colorIdentifier(color)
+            if i == 2:
+                blackSquaresPassed += 1
+            else:
+                return
+
+def colorIdentifier(rgb):
+    # Return 0 if missing any values
+    if rgb[0] == None or rgb[1] == None or rgb[2] == None:
+        return 0
+    # Sum RGB values
+    s = rgb[0] + rgb[1] + rgb[2]
+    # Return 0 if the value is not a strong reading
+    if s < 10:
+        # check twice to make sure color sensor reads black
+        for _ in range(2):
+            time.sleep(0.1)
+            if COLOR_SENSOR.get_rgb()[0] == None or COLOR_SENSOR.get_rgb()[1] == None or COLOR_SENSOR.get_rgb()[2] == None:
+                return 0
+            s = COLOR_SENSOR.get_rgb()[0] + COLOR_SENSOR.get_rgb()[1] + COLOR_SENSOR.get_rgb()[2]
+            if (s < 20):
+                continue
+            else:
+                return 0
+        return 2
+    # Normalize RGB values
+    newRGB = [rgb[0]/s, rgb[1]/s, rgb[2]/s]
+    # Identify the color based on testing clusters
+    if newRGB[0] > 0.6:
+        if newRGB[1] < 0.4:
+            if newRGB[2] < 0.3:
+                return 1
+    elif newRGB[1] > 0.5:
+        if newRGB[0] < 0.25:
+            if newRGB[2] < 0.2:
+                return 3
+    else:
+        print("Unable to identify")
+        return 0
+
+def toRoom():
+    global blackSquaresPassed
+    global forwardSpeed
+    global fullSquareTime
+    while True:
+        for i in range(10):  
+            color = get_color()
+            if color == 2:
+                if blackSquaresPassed == 1 :
+                    continue
+                else:
+                    blackSquaresPassed = 0
+                    turnRightandGo()
+                    break
+            else:
+                LEFT_WHEEL.set_power(forwardSpeed)
+                RIGHT_WHEEL.set_power(forwardSpeed)
+                time.sleep(fullSquareTime/10)  
+                LEFT_WHEEL.set_power(0)
+                RIGHT_WHEEL.set_power(0)
+
+def turnRightandGo():
+    # Go forward a bit more and turn right to the room
+    # Then go forward until we are in front of the room
+    global forwardSpeed
+    global fullSquareTime
+    global blackSquaresPassed
+
+    turnRight()
+    while True:
+        for i in range(10):  
+            color = get_color()
+            if color == 2:
+                if blackSquaresPassed == 3:
+                    continue
+                else:
+                    LEFT_WHEEL.set_power(forwardSpeed)
+                    RIGHT_WHEEL.set_power(forwardSpeed)
+                    time.sleep(fullSquareTime/2)
+                    turnIntoRoom()
+                    break
+            else:
+                LEFT_WHEEL.set_power(forwardSpeed)
+                RIGHT_WHEEL.set_power(forwardSpeed)
+                time.sleep(fullSquareTime/10)  
+                LEFT_WHEEL.set_power(0)
+                RIGHT_WHEEL.set_power(0)
+
+def turnRight():
+    global forwardSpeed
+    global fullSquareTime
+    LEFT_WHEEL.set_power(forwardSpeed)
+    RIGHT_WHEEL.set_power(-forwardSpeed)
+    time.sleep(0.25)
+    LEFT_WHEEL.set_power(0)
+    RIGHT_WHEEL.set_power(0)
+
+def turnLeft():
+    global forwardSpeed
+    global fullSquareTime
+    LEFT_WHEEL.set_power(-forwardSpeed)
+    RIGHT_WHEEL.set_power(forwardSpeed)
+    time.sleep(0.25)
+    LEFT_WHEEL.set_power(0)
+    RIGHT_WHEEL.set_power(0)
+
+def turnIntoRoom():
+    turnLeft()
+    while True:
+        for i in range(10):  
+            color = get_color()
+            if color == 2:
+                break
+            else:
+                LEFT_WHEEL.set_power(forwardSpeed)
+                RIGHT_WHEEL.set_power(forwardSpeed)
+                time.sleep(fullSquareTime/10)  
+                LEFT_WHEEL.set_power(0)
+                RIGHT_WHEEL.set_power(0)
+                break
+
+def homeFromRoom():
+    # This one is gonna be hard, we need to either get out of the room pretty perfectly,
+    #  or les perfectly and then be better in the hallway
+    TODO

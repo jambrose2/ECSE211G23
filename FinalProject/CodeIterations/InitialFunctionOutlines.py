@@ -1,0 +1,255 @@
+from utils.brick import *
+from lib import *
+import time
+import threading
+from collect_us_sensor_data import *
+import simpleaudio as sa
+
+
+COLOR_SENSOR_MOTOR = Motor('A')
+COLOR_SENSOR = EV3ColorSensor(1)
+RIGHT_WHEEL = Motor('B')
+LEFT_WHEEL = Motor('C')
+
+
+
+forwardSpeed = 20
+
+halfSquareTime = 1.5
+fullSquareTime = 3
+
+turnSpeed = 30
+stopEvent = threading.Event()
+
+
+currentSquare = None
+
+
+isOnBlack = False
+
+
+fires_putout = 0
+
+greenStickerSquares = [False, False, False, False, False, False]
+fireSquare = [False, False, False, False, False, False]
+
+
+centerOfSquareCoordinates = [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]
+
+
+
+
+sound = sa.WaveObject.from_wave_file("203913__landub__fire-brigade-siren-street-cars.wav")
+
+
+def timerThread():
+    time.sleep(150)
+    recall()
+
+def recall():
+    global stopEvent
+    stopEvent.set()
+    time.sleep(0.1)
+    findDoor()
+    goHome()
+
+
+def findDoor():
+    TODO
+    # Find door while in room and go to it
+
+def goHome():
+    TODO
+    # Go back to the starting point from doorway
+
+def fireSiren():
+    while True:
+        play_obj = sound.play()
+        play_obj.wait_done()
+
+
+
+def extinguishProtocol():
+    COLOR_SENSOR_MOTOR.set_position_relative(45)
+    time.sleep(1)
+    backup(1)
+    COLOR_SENSOR_MOTOR.set_position_relative(-45)
+
+
+def get_color():
+        global fires_putout
+        global isOnBlack
+        global currentSquare
+        global greenStickerSquares
+        while True:
+            color = COLOR_SENSOR.get_rgb()
+            i = colorIdentifier(color)
+            if i == 1:
+                fires_putout += 1
+                extinguishProtocol()
+            if i == 2:
+                isOnBlack = True
+            if i == 3:
+                greenStickerSquares[currentSquare] = True
+            else:
+                return 0
+
+def colorIdentifier(rgb):
+    # Return 0 if missing any values
+    if rgb[0] == None or rgb[1] == None or rgb[2] == None:
+        return 0
+    # Sum RGB values
+    s = rgb[0] + rgb[1] + rgb[2]
+    # Return 0 if the value is not a strong reading
+    if s < 10:
+        # check twice to make sure color sensor reads black
+        for _ in range(2):
+            time.sleep(0.1)
+            if COLOR_SENSOR.get_rgb()[0] == None or COLOR_SENSOR.get_rgb()[1] == None or COLOR_SENSOR.get_rgb()[2] == None:
+                return 0
+            s = COLOR_SENSOR.get_rgb()[0] + COLOR_SENSOR.get_rgb()[1] + COLOR_SENSOR.get_rgb()[2]
+            if (s < 20):
+                continue
+            else:
+                return 0
+        return 2
+    # Normalize RGB values
+    newRGB = [rgb[0]/s, rgb[1]/s, rgb[2]/s]
+    # Identify the color based on testing clusters
+    if newRGB[0] > 0.6:
+        if newRGB[1] < 0.4:
+            if newRGB[2] < 0.3:
+                return 1
+    elif newRGB[1] > 0.5:
+        if newRGB[0] < 0.25:
+            if newRGB[2] < 0.2:
+                return 3
+    else:
+        print("Unable to identify")
+        return 0
+
+
+
+def backup(length):
+    RIGHT_WHEEL.set_power(-20)
+    LEFT_WHEEL.set_power(-20)
+    time.sleep(length)
+    RIGHT_WHEEL.set_power(0)
+    LEFT_WHEEL.set_power(0)
+
+
+def searchAlgo():
+    global fires_putout
+    global isOnBlack
+    global currentSquare
+    global greenStickerSquares
+    global squaresVisited
+    fires_putout = 0
+    squaresVisited = 0
+    while fires_putout < 2:
+        if squaresVisited == 0:
+            squareSearch(0)
+            squaresVisited += 1
+
+
+def escapeProtocol():
+    TODO
+    # Leave square and go back home
+
+def retreat():
+    TODO
+    # If we are in a green sticker square, retreat accordingly
+    # Thinking we should localize with the color sensor and then go back to the center of the square
+    # Maybe keep an array of the center of the squares and give a margin of error
+    # Then just reverse
+
+def barrier(squareNumber):
+    TODO
+    # Check if we are at the barrier of the room or just a square barrier and act accordingly
+    # Maybe localize which room we are in and check if its barrier between rooms or just a square barrier
+    # Then act accordingly
+
+def backupRight():
+    TODO
+    # Swing straight from the right side
+
+def backupLeft():
+    TODO
+    # Swing straight from the left side
+
+def turn90Left():
+    TODO
+    # Turn 90 degrees to the left
+
+def turn90Right():
+    TODO
+    # Turn 90 degrees to the right
+
+def turn180():
+    TODO
+    # Turn 180 degrees
+
+    
+
+def squareSearch(squareNumber):
+    global currentSquare
+    global isOnBlack
+    global greenStickerSquares
+    global fireSquare
+    currentSquare = squareNumber
+    while True:
+        while not isOnBlack and not greenStickerSquares[currentSquare]:
+            for i in range(10):  
+                color = get_color()
+                if color == 1:
+                    fireSquare[currentSquare] = True
+                    if (fires_putout == 2):
+                        escapeProtocol()
+                        break
+                    else:
+                        retreat()
+                        break
+                if isOnBlack:
+                    barrier(currentSquare)
+                    break 
+                if greenStickerSquares[currentSquare]:
+                    retreat()
+                    break
+                LEFT_WHEEL.set_power(forwardSpeed)
+                RIGHT_WHEEL.set_power(0)
+                time.sleep(fullSquareTime/10)  
+                LEFT_WHEEL.set_power(0)
+
+        for i in range(10):  
+                color = get_color()
+                if color == 1:
+                    fireSquare[currentSquare] = True
+                    if (fires_putout == 2):
+                        escapeProtocol()
+                        break
+                    else:
+                        retreat()
+                        break
+                if isOnBlack:
+                    barrier(currentSquare)
+                    break 
+                if greenStickerSquares[currentSquare]:
+                    retreat()
+                    break
+                RIGHT_WHEEL.set_power(50)
+                LEFT_WHEEL.set_power(0)
+                time.sleep(fullSquareTime/10)
+                RIGHT_WHEEL.set_power(0)  
+    
+    
+
+def hallwayNavigator():
+    TODO
+    # Navigate the hallway and find the room
+
+
+if __name__ == '__main__':
+    timeThread = threading.Thread(target = timerThread, daemon=True)
+    
+    
+
